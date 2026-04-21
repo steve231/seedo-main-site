@@ -12,7 +12,7 @@ import heroImage from "../imports/hero.png";
 import seedoPointRelaisImage from "../imports/SEEDO_POINT_RELAIS.png";
 
 import { db } from "../lib/firebase";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { collection, addDoc, serverTimestamp, query, where, getDocs } from "firebase/firestore";
 
 /* ── helpers ────────────────────────────────────────────── */
 function useCountUp(target: number, duration = 2000) {
@@ -145,7 +145,19 @@ function WaitlistModal({ onClose, waitlistCount, setWaitlistCount }:
 
   setLoading(true);
 
-  try {
+  const q = query(
+  collection(db, "liste_attente"),
+  where("email", "==", form.email)
+    );
+
+    const snapshot = await getDocs(q);
+
+    if (!snapshot.empty) {
+      alert("Cet email est déjà inscrit.");
+      setLoading(false);
+      return;
+    } else {
+      try {
     await addDoc(collection(db, "liste_attente"), {
       nom: form.nom,
       telephone: form.telephone,
@@ -165,6 +177,7 @@ function WaitlistModal({ onClose, waitlistCount, setWaitlistCount }:
   } finally {
     setLoading(false);
   }
+    }
 };
 
   return (
