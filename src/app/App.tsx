@@ -11,6 +11,9 @@ import logoImage from "../imports/ChatGPT_Image_1_avr._2026,_08_48_33.png";
 import heroImage from "../imports/hero.png";
 import seedoPointRelaisImage from "../imports/SEEDO_POINT_RELAIS.png";
 
+import { db } from "../lib/firebase";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+
 /* ── helpers ────────────────────────────────────────────── */
 function useCountUp(target: number, duration = 2000) {
   const [count, setCount] = useState(0);
@@ -135,12 +138,34 @@ function WaitlistModal({ onClose, waitlistCount, setWaitlistCount }:
     setTimeout(() => setStep(1), 200);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!form.nom || !form.telephone || !form.email || !form.ville) return;
-    setLoading(true);
-    setTimeout(() => { setStep(2); setWaitlistCount(c => c + 1); setLoading(false); }, 1000);
-  };
+  const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+
+  if (!form.nom || !form.telephone || !form.email || !form.ville || !profile) return;
+
+  setLoading(true);
+
+  try {
+    await addDoc(collection(db, "liste_attente"), {
+      nom: form.nom,
+      telephone: form.telephone,
+      email: form.email,
+      ville: form.ville,
+      typeUtilisateur: profile, // 🔥 important
+      createdAt: serverTimestamp(),
+    });
+
+    // UI success
+    setStep(2);
+    setWaitlistCount(c => c + 1);
+
+  } catch (error) {
+    console.error("Erreur Firebase :", error);
+    alert("Une erreur est survenue. Réessayez.");
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
