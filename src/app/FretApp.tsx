@@ -109,10 +109,10 @@ function FretNavbar({ onCtaClick }: { onCtaClick: () => void }) {
 }
 
 /* ── waitlist modal (collection Firestore dédiée au fret) ─────────── */
-type FretProfileId = "expediteur" | "transporteur";
+type FretProfileId = "reserver_un_fret" | "devenir_transporteur";
 const FRET_PROFILES: { id: FretProfileId; icon: React.ReactNode; label: string; desc: string }[] = [
-  { id: "expediteur", icon: <Package className="h-6 w-6" />, label: "Réserver un fret", desc: "Je cherche un véhicule pour transporter une marchandise" },
-  { id: "transporteur", icon: <Truck className="h-6 w-6" />, label: "Devenir transporteur", desc: "Je veux recevoir des demandes de transport compatibles" },
+  { id: "reserver_un_fret", icon: <Package className="h-6 w-6" />, label: "Réserver un fret", desc: "Je cherche un véhicule pour transporter une marchandise" },
+  { id: "devenir_transporteur", icon: <Truck className="h-6 w-6" />, label: "Devenir transporteur", desc: "Je veux recevoir des demandes de transport compatibles" },
 ];
 
 function FretWaitlistModal({ onClose, waitlistCount, setWaitlistCount }:
@@ -135,7 +135,7 @@ function FretWaitlistModal({ onClose, waitlistCount, setWaitlistCount }:
     if (!form.nom || !form.telephone || !form.email || !form.ville || !profile) return;
     setLoading(true);
 
-    const q = query(collection(db, "liste_attente_fret"), where("email", "==", form.email));
+    const q = query(collection(db, "prospects_seedo_fret"), where("email", "==", form.email));
     const snapshot = await getDocs(q);
 
     if (!snapshot.empty) {
@@ -145,12 +145,12 @@ function FretWaitlistModal({ onClose, waitlistCount, setWaitlistCount }:
     }
 
     try {
-      await addDoc(collection(db, "liste_attente_fret"), {
+      await addDoc(collection(db, "prospects_seedo_fret"), {
         nom: form.nom,
         telephone: form.telephone,
         email: form.email,
         ville: form.ville,
-        typeUtilisateur: profile,
+        profil: profile,
         createdAt: serverTimestamp(),
       });
       setStep(2);
